@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Daily Tracker">
+<meta name="theme-color" content="#2D6A4F">
+<title>Daily Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#EEF4F0;min-height:100vh;overscroll-behavior:none}
+#app{max-width:440px;margin:0 auto;min-height:100vh}
+
+.hdr{background:linear-gradient(135deg,#1E5C3E 0%,#2D6A4F 100%);padding:20px 20px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px #0E3D2644}
+.hdr-top{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.hdr-icon{width:36px;height:36px;border-radius:10px;background:#52B78830;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr-title{color:#fff;font-weight:800;font-size:18px;letter-spacing:-0.4px}
+.hdr-sub{color:#95D5B2;font-size:11px}
+.tabs{display:flex}
+.tab-btn{flex:1;padding:11px 0;border:none;cursor:pointer;font-weight:500;font-size:13px;background:transparent;color:#95D5B2;border-radius:10px 10px 0 0;transition:color 0.2s;font-family:inherit}
+.tab-btn.active{background:#EEF4F0;color:#2D6A4F;font-weight:700}
+
+.page{padding:18px 16px 120px}
+
+.card{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 6px #1B2B2709}
+.card-weight{border-left:4px solid #F4845F}
+.card-meal{border-left:4px solid #52B788}
+.card-custom{border-left:4px solid #A78BFA}
+.card-custom-add{border-left:4px solid #A78BFA;background:#FAFBFF}
+.card-export{border-left:4px solid #3B82F6;background:#F0F7FF}
+.card-danger{border-left:4px solid #EF4444;background:#FFF5F5}
+
+.lbl{font-size:10px;color:#7A9E8E;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px}
+
+.inp-date{width:100%;font-size:15px;font-weight:700;color:#1B2B27;border:none;outline:none;background:transparent;font-family:inherit}
+.inp-weight{font-size:28px;font-weight:800;color:#F4845F;width:120px;border:none;outline:none;background:transparent;font-family:inherit}
+.inp-text{width:100%;font-size:14px;color:#1B2B27;line-height:1.55;border:none;outline:none;background:transparent;font-family:inherit;resize:none}
+.inp-label{flex:1;font-size:14px;font-weight:600;color:#1B2B27;border:1.5px solid #DDD6FE;border-radius:10px;padding:10px 12px;outline:none;font-family:inherit;background:#fff}
+.inp-range{width:100%;font-size:13px;font-weight:600;color:#1B2B27;border:1.5px solid #BFDBFE;border-radius:10px;padding:9px 11px;outline:none;font-family:inherit;background:#fff}
+.inp-range:focus{border-color:#3B82F6}
+
+/* Sub-items */
+.subitems{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.subitem-row{display:flex;align-items:center;gap:6px;background:#F6FAF8;border-radius:10px;padding:7px 10px;border:1px solid #E2EFE9}
+.subitem-row.custom-sub{background:#F5F3FF;border-color:#EDE9FE}
+.subitem-inp{flex:1;font-size:13px;color:#1B2B27;border:none;outline:none;background:transparent;font-family:inherit}
+.subitem-inp::placeholder{color:#B0C9BE}
+.btn-remove-sub{background:none;border:none;color:#CCC;font-size:15px;cursor:pointer;padding:0 2px;line-height:1;flex-shrink:0}
+.btn-remove-sub:hover{color:#F4845F}
+.btn-add-sub{display:flex;align-items:center;gap:5px;margin-top:8px;background:none;border:1.5px dashed #D1FAE5;border-radius:8px;color:#52B788;font-size:12px;font-weight:600;padding:7px 10px;cursor:pointer;font-family:inherit;width:100%}
+.btn-add-sub.custom{border-color:#DDD6FE;color:#7C3AED}
+.btn-add-sub:hover{background:#F0FDF4}
+.btn-add-sub.custom:hover{background:#F5F3FF}
+.subitem-num{font-size:11px;color:#B0C9BE;font-weight:600;min-width:16px}
+
+/* Toggle pills */
+.toggle-row{display:flex;gap:8px;margin-bottom:14px}
+.toggle-pill{flex:1;padding:10px 6px;border-radius:10px;border:2px solid #BFDBFE;background:#fff;color:#3B82F6;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:all 0.15s}
+.toggle-pill.active{background:#3B82F6;color:#fff;border-color:#3B82F6}
+
+/* Range quick-select */
+.range-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.range-chip{padding:5px 11px;border-radius:8px;border:1.5px solid #BFDBFE;background:#fff;color:#3B82F6;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.range-chip.active{background:#EFF6FF;border-color:#3B82F6}
+
+.range-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.range-lbl{font-size:10px;color:#6B7280;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+
+/* Buttons */
+.btn-save{width:100%;padding:17px;border-radius:16px;background:#2D6A4F;color:#fff;font-size:16px;font-weight:700;box-shadow:0 4px 14px #2D6A4F44;transition:background 0.35s;letter-spacing:0.3px;border:none;cursor:pointer;font-family:inherit}
+.btn-save.saved{background:#52B788}
+.btn-add-custom{width:100%;padding:13px;margin-bottom:14px;background:#F3F0FF;color:#7C3AED;font-weight:700;font-size:14px;border:2px dashed #DDD6FE;border-radius:10px;cursor:pointer;font-family:inherit}
+.btn-export-go{width:100%;padding:14px;background:#3B82F6;color:#fff;font-size:14px;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:4px}
+.btn-export-go:disabled{background:#E5E7EB;color:#9CA3AF;cursor:default}
+.btn-delete-entry{width:100%;padding:13px;background:#FEE2E2;color:#DC2626;font-size:14px;font-weight:700;border:2px solid #FECACA;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:14px}
+.btn-delete-confirm{flex:1;padding:13px;background:#EF4444;color:#fff;font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+.btn-chip{background:#EDE9FE;color:#7C3AED;font-size:12px;padding:5px 10px;font-weight:600;border:none;border-radius:8px;cursor:pointer;font-family:inherit}
+.btn-icon-pick{background:#EDE9FE;font-size:20px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:none;border-radius:10px;cursor:pointer}
+.btn-icon-opt{font-size:20px;background:transparent;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:none;border-radius:8px;cursor:pointer}
+.btn-icon-opt.sel{background:#EDE9FE}
+.btn-remove{background:none;color:#CCC;font-size:16px;padding:0 4px;line-height:1;border:none;cursor:pointer}
+.btn-purple{flex:1;padding:11px;background:#7C3AED;color:#fff;font-weight:700;font-size:14px;border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+.btn-cancel{padding:11px 16px;background:#EEF4F0;color:#6B7280;font-weight:600;font-size:14px;border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+
+.tag-today{background:#EEF4F0;color:#2D6A4F;font-size:10px;font-weight:700;border-radius:6px;padding:3px 8px}
+
+.icon-picker{position:absolute;top:46px;left:0;background:#fff;border-radius:12px;padding:10px;box-shadow:0 4px 20px #0002;display:flex;flex-wrap:wrap;gap:6px;width:200px;z-index:200}
+.icon-pick-wrap{position:relative}
+
+.chart-wrap{margin:0}
+.stat-row{display:flex;gap:10px;margin-top:14px;border-top:1px solid #EEF4F0;padding-top:14px}
+.stat{flex:1;text-align:center}
+.stat-val{font-size:22px;font-weight:800;color:#2D6A4F}
+.stat-val.up{color:#F4845F}
+.stat-val.dn{color:#52B788}
+.stat-lbl{font-size:10px;color:#7A9E8E;margin-top:2px}
+
+.hist-card{background:#fff;border-radius:16px;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 6px #1B2B2709}
+.hist-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.hist-date{font-weight:700;font-size:14px;color:#1B2B27}
+.hist-sub{font-size:11px;color:#B0C9BE;margin-top:1px}
+.hist-w{background:#FEF0EB;border-radius:8px;padding:4px 10px;text-align:center}
+.hist-w-val{font-size:15px;font-weight:800;color:#F4845F}
+.hist-w-u{font-size:9px;color:#F4A07A}
+.hist-meal{display:flex;gap:6px;font-size:12px;margin-bottom:3px;align-items:flex-start}
+.hist-meal span{color:#3A5E51;line-height:1.4}
+.hist-meal span.custom{color:#6D28D9}
+.hist-actions{display:flex;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #F0F4F2}
+.hist-btn{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit}
+.hist-btn-edit{background:#EEF4F0;color:#2D6A4F}
+.hist-btn-del{background:#FEE2E2;color:#DC2626}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+
+.empty{text-align:center;color:#7A9E8E;padding:48px 20px;font-size:14px}
+.empty small{color:#B0C9BE;font-size:12px}
+
+.custom-form-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.custom-btns{display:flex;gap:8px}
+.meal-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+
+/* Confirm overlay */
+.confirm-box{background:#fff;border-radius:16px;padding:18px;margin-bottom:14px;box-shadow:0 2px 16px #EF444422;border:2px solid #FECACA}
+.confirm-title{font-size:15px;font-weight:700;color:#DC2626;margin-bottom:6px}
+.confirm-msg{font-size:13px;color:#6B7280;margin-bottom:14px;line-height:1.5}
+.confirm-btns{display:flex;gap:8px}
+
+/* Export summary badge */
+.export-badge{display:inline-block;background:#DBEAFE;color:#1D4ED8;font-size:11px;font-weight:700;border-radius:6px;padding:3px 8px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ─────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────
+const DEFAULT_MEALS = [
+  { key:'breakfast', label:'Breakfast', icon:'🌅' },
+  { key:'lunch',     label:'Lunch',     icon:'☀️'  },
+  { key:'dinner',    label:'Dinner',    icon:'🌙'  },
+  { key:'snacks',    label:'Snacks',    icon:'🍎'  },
+];
+const ICONS = ['🥤','🍵','☕','🥛','🏋️','🌿','🍜','🥗','🍳','🍞','🍇','🫖','🧃','🍌','🫙','🌮','🫐','🥜','🧆','🥙'];
+
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+const S = {
+  tab: 'log',
+  date: todayStr(),
+  logs: {},
+  knownLabels: [],
+  draft: emptyDraft(),
+  addingCustom: false,
+  newLabel: '',
+  newIcon: '🥤',
+  showIconPicker: false,
+  saveLabel: 'Save Entry',
+  confirmDeleteDate: null,   // date string pending deletion
+  // Export panel state
+  exportIncludeFood: true,
+  exportIncludeWeight: true,
+  exportRangeMode: 'all',    // 'all' | '7d' | '30d' | '90d' | 'custom'
+  exportFrom: '',
+  exportTo: '',
+};
+
+function emptyDraft() {
+  return { breakfast:[], lunch:[], dinner:[], snacks:[], weight:'', custom:[] };
+}
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function fmtDate(d) {
+  return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+function fmtShort(d) {
+  return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function esc(s) {
+  return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escCSV(v) { return '"'+String(v??'').replace(/"/g,'""')+'"'; }
+function uid() { return Date.now() + Math.random().toString(36).slice(2,7); }
+
+// ─────────────────────────────────────────────
+// localStorage
+// ─────────────────────────────────────────────
+function loadData() {
+  try {
+    const v = localStorage.getItem('dt_logs');
+    if (v) {
+      const raw = JSON.parse(v);
+      for (const dt of Object.keys(raw)) {
+        const e = raw[dt];
+        for (const m of DEFAULT_MEALS) {
+          if (typeof e[m.key] === 'string') {
+            e[m.key] = e[m.key].trim() ? [{ id: uid(), text: e[m.key].trim() }] : [];
+          } else if (!Array.isArray(e[m.key])) {
+            e[m.key] = [];
+          }
+        }
+        if (Array.isArray(e.custom)) {
+          e.custom = e.custom.map(c => {
+            if (typeof c.text === 'string') {
+              return { ...c, items: c.text.trim() ? [{ id: uid(), text: c.text.trim() }] : [] };
+            }
+            if (!Array.isArray(c.items)) c.items = [];
+            return c;
+          });
+        } else {
+          e.custom = [];
+        }
+      }
+      S.logs = raw;
+    }
+  } catch{}
+  try { const v = localStorage.getItem('dt_labels'); if(v) S.knownLabels = JSON.parse(v); } catch{}
+}
+function saveLogs() {
+  try { localStorage.setItem('dt_logs', JSON.stringify(S.logs)); } catch{}
+}
+function saveLabels() {
+  try { localStorage.setItem('dt_labels', JSON.stringify(S.knownLabels)); } catch{}
+}
+
+// ─────────────────────────────────────────────
+// Draft sync
+// ─────────────────────────────────────────────
+function syncDraft() {
+  const e = S.logs[S.date];
+  S.draft = e ? JSON.parse(JSON.stringify(e)) : emptyDraft();
+  for (const m of DEFAULT_MEALS) {
+    if (!Array.isArray(S.draft[m.key])) S.draft[m.key] = [];
+  }
+  if (!Array.isArray(S.draft.custom)) S.draft.custom = [];
+}
+
+// ─────────────────────────────────────────────
+// Weight series
+// ─────────────────────────────────────────────
+function weightSeries() {
+  return Object.entries(S.logs)
+    .filter(([,v]) => v.weight && !isNaN(parseFloat(v.weight)))
+    .map(([d,v]) => ({date:d, w:parseFloat(v.weight)}))
+    .sort((a,b) => a.date.localeCompare(b.date));
+}
+
+// ─────────────────────────────────────────────
+// SVG Chart
+// ─────────────────────────────────────────────
+function buildChart() {
+  const ws = weightSeries();
+  if (!ws.length) return `<div style="text-align:center;color:#7A9E8E;padding:36px 0;font-size:13px">No weight data yet.<br><span style="color:#B0C9BE;font-size:12px">Add your weight in the Log tab.</span></div>`;
+  const VW=300,VH=160,P={t:14,r:14,b:30,l:36};
+  const W=VW-P.l-P.r, H=VH-P.t-P.b, n=ws.length;
+  const vals=ws.map(d=>d.w);
+  const minW=Math.min(...vals), maxW=Math.max(...vals);
+  const rng=maxW-minW||2;
+  const lo=minW-rng*0.15, hi=maxW+rng*0.15;
+  const x=i=>P.l+(n===1?W/2:(i/(n-1))*W);
+  const y=w=>P.t+H-((w-lo)/(hi-lo))*H;
+  const pts=ws.map((d,i)=>`${x(i)},${y(d.w)}`).join(' ');
+  const area=`${x(0)},${P.t+H} ${pts} ${x(n-1)},${P.t+H}`;
+  const yT=[0.2,0.5,0.8].map(f=>lo+(hi-lo)*f);
+  const xL=n<=3 ? ws.map((d,i)=>({i,l:fmtShort(d.date)}))
+    : [0,Math.round((n-1)/2),n-1].map(i=>({i,l:fmtShort(ws[i].date)}));
+  return `<svg width="100%" viewBox="0 0 ${VW} ${VH}" style="overflow:visible">
+    ${yT.map(w=>`<line x1="${P.l}" x2="${P.l+W}" y1="${y(w)}" y2="${y(w)}" stroke="#D8EDE5" stroke-width="1" stroke-dasharray="4 3"/>`).join('')}
+    <polygon points="${area}" fill="#52B78818"/>
+    <polyline points="${pts}" fill="none" stroke="#2D6A4F" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${ws.map((d,i)=>`<circle cx="${x(i)}" cy="${y(d.w)}" r="4.5" fill="#2D6A4F" stroke="#fff" stroke-width="2"/>`).join('')}
+    ${yT.map(w=>`<text x="${P.l-5}" y="${y(w)+4}" text-anchor="end" font-size="9.5" fill="#7A9E8E">${Math.round(w*10)/10}</text>`).join('')}
+    ${xL.map(({i,l})=>`<text x="${x(i)}" y="${P.t+H+16}" text-anchor="middle" font-size="9" fill="#7A9E8E">${l}</text>`).join('')}
+    <text x="9" y="${P.t+H/2}" text-anchor="middle" font-size="9" fill="#7A9E8E" transform="rotate(-90 9 ${P.t+H/2})">kg</text>
+  </svg>`;
+}
+
+// ─────────────────────────────────────────────
+// Sub-item renderer
+// ─────────────────────────────────────────────
+function renderSubItems(items, mealKey, customId, isCustom) {
+  const rowClass = isCustom ? 'subitem-row custom-sub' : 'subitem-row';
+  const btnClass = isCustom ? 'btn-add-sub custom' : 'btn-add-sub';
+  const addAction = isCustom ? 'add-sub-custom' : 'add-sub-meal';
+  const removeAction = isCustom ? 'remove-sub-custom' : 'remove-sub-meal';
+  const updateAction = isCustom ? 'update-sub-custom' : 'update-sub-meal';
+  const dataKey = isCustom ? `data-cid="${customId}"` : `data-key="${mealKey}"`;
+  const rows = (items||[]).map((it,idx) => `
+    <div class="${rowClass}">
+      <span class="subitem-num">${idx+1}.</span>
+      <input class="subitem-inp" type="text" value="${esc(it.text)}"
+        placeholder="Add item..."
+        data-action="${updateAction}" data-sid="${it.id}" ${dataKey}>
+      <button class="btn-remove-sub" data-action="${removeAction}" data-sid="${it.id}" ${dataKey}>✕</button>
+    </div>`).join('');
+  const addBtn = `<button class="${btnClass}" data-action="${addAction}" ${dataKey}><span>＋</span> Add item</button>`;
+  return `<div class="subitems">${rows}</div>${addBtn}`;
+}
+
+// ─────────────────────────────────────────────
+// Export date range helpers
+// ─────────────────────────────────────────────
+function getExportDateRange() {
+  const allDates = Object.keys(S.logs).sort();
+  if (!allDates.length) return { from: '', to: '', dates: [] };
+  const today = todayStr();
+  let from, to;
+  if (S.exportRangeMode === 'all') {
+    from = allDates[0]; to = allDates[allDates.length - 1];
+  } else if (S.exportRangeMode === '7d') {
+    to = today;
+    const d = new Date(); d.setDate(d.getDate() - 6);
+    from = d.toISOString().split('T')[0];
+  } else if (S.exportRangeMode === '30d') {
+    to = today;
+    const d = new Date(); d.setDate(d.getDate() - 29);
+    from = d.toISOString().split('T')[0];
+  } else if (S.exportRangeMode === '90d') {
+    to = today;
+    const d = new Date(); d.setDate(d.getDate() - 89);
+    from = d.toISOString().split('T')[0];
+  } else {
+    from = S.exportFrom || allDates[0];
+    to   = S.exportTo   || allDates[allDates.length - 1];
+  }
+  const dates = allDates.filter(d => d >= from && d <= to);
+  return { from, to, dates };
+}
+
+// ─────────────────────────────────────────────
+// Render: Log Tab
+// ─────────────────────────────────────────────
+function renderLogTab() {
+  const d = S.draft;
+  const isToday = S.date === todayStr();
+  const hasEntry = !!S.logs[S.date];
+
+  const mealCards = DEFAULT_MEALS.map(m => {
+    const items = d[m.key] || [];
+    return `
+    <div class="card card-meal">
+      <div class="meal-card-hdr">
+        <div class="lbl">${m.icon}&nbsp; ${m.label}</div>
+        ${items.length > 0 ? `<span style="font-size:10px;color:#95D5B2;font-weight:600">${items.length} item${items.length!==1?'s':''}</span>` : ''}
+      </div>
+      ${renderSubItems(items, m.key, null, false)}
+    </div>`;
+  }).join('');
+
+  const customCards = (d.custom||[]).map(c => `
+    <div class="card card-custom">
+      <div class="meal-card-hdr">
+        <div class="lbl">${esc(c.icon)}&nbsp; ${esc(c.label)}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${(c.items||[]).length > 0 ? `<span style="font-size:10px;color:#C4B5FD;font-weight:600">${(c.items||[]).length} item${(c.items||[]).length!==1?'s':''}</span>` : ''}
+          <button class="btn-remove" data-action="remove-custom" data-id="${c.id}">✕</button>
+        </div>
+      </div>
+      ${renderSubItems(c.items||[], null, c.id, true)}
+    </div>`).join('');
+
+  const usedLabels = new Set((d.custom||[]).map(c=>c.label.toLowerCase()));
+  const chips = S.knownLabels.filter(k=>!usedLabels.has(k.label.toLowerCase()))
+    .map(k=>`<button class="btn-chip" data-action="quick-custom" data-label="${esc(k.label)}" data-icon="${esc(k.icon)}">${esc(k.icon)} ${esc(k.label)}</button>`).join('');
+
+  const iconGrid = ICONS.map(ic=>`<button class="btn-icon-opt ${ic===S.newIcon?'sel':''}" data-action="pick-icon" data-icon="${ic}">${ic}</button>`).join('');
+  const pickerHTML = S.showIconPicker ? `<div class="icon-picker">${iconGrid}</div>` : '';
+
+  const addSection = S.addingCustom ? `
+    <div class="card card-custom-add">
+      <div class="lbl">✨&nbsp; New Custom Meal</div>
+      ${S.knownLabels.length && chips ? `<div style="font-size:11px;color:#9CA3AF;margin-bottom:6px">Quick add:</div><div class="chips">${chips}</div>` : ''}
+      <div class="custom-form-row">
+        <div class="icon-pick-wrap">
+          <button class="btn-icon-pick" data-action="toggle-icon-picker">${S.newIcon}</button>
+          ${pickerHTML}
+        </div>
+        <input class="inp-label" id="newLabelInput" type="text" placeholder='Label (e.g. Pre-workout)' value="${esc(S.newLabel)}" data-action="set-new-label">
+      </div>
+      <div class="custom-btns">
+        <button class="btn-purple" data-action="add-custom">Add Meal</button>
+        <button class="btn-cancel" data-action="cancel-custom">Cancel</button>
+      </div>
+    </div>` :
+    `<button class="btn-add-custom" data-action="start-add-custom">+ Add Custom Meal</button>`;
+
+  // Delete confirm inline
+  const deleteSection = S.confirmDeleteDate === S.date ? `
+    <div class="confirm-box">
+      <div class="confirm-title">🗑 Delete this entry?</div>
+      <div class="confirm-msg">This will permanently remove all food and weight data for <b>${fmtDate(S.date)}</b>. This cannot be undone.</div>
+      <div class="confirm-btns">
+        <button class="btn-delete-confirm" data-action="confirm-delete">Yes, Delete</button>
+        <button class="btn-cancel" data-action="cancel-delete">Cancel</button>
+      </div>
+    </div>` : (hasEntry ? `<button class="btn-delete-entry" data-action="delete-entry">🗑 Delete This Entry</button>` : '');
+
+  return `
+    <div class="card" style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:22px">📅</span>
+      <div style="flex:1">
+        <div class="lbl">Date</div>
+        <input class="inp-date" type="date" value="${S.date}" data-action="set-date">
+      </div>
+      ${isToday?'<span class="tag-today">TODAY</span>':''}
+    </div>
+    <div class="card card-weight">
+      <div class="lbl">⚖️&nbsp; Weight</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <input class="inp-weight" type="number" step="0.1" min="20" max="300" placeholder="0.0"
+          value="${esc(d.weight)}" data-action="set-weight">
+        <span style="font-size:16px;color:#F4845F;font-weight:600;opacity:0.7">kg</span>
+      </div>
+    </div>
+    ${mealCards}
+    ${customCards}
+    ${addSection}
+    <button class="btn-save ${S.saveLabel==='✓  Saved!'?'saved':''}" data-action="save">${S.saveLabel}</button>
+    ${deleteSection}`;
+}
+
+// ─────────────────────────────────────────────
+// Render: Weight/History Tab
+// ─────────────────────────────────────────────
+function renderWeightTab() {
+  const ws = weightSeries();
+  const latest = ws.at(-1);
+  const delta = latest && ws.length>1 ? +(latest.w - ws[0].w).toFixed(1) : null;
+  const hasLogs = Object.keys(S.logs).length > 0;
+  const sortedDates = Object.keys(S.logs).sort((a,b)=>b.localeCompare(a));
+
+  const statsHTML = ws.length ? `
+    <div class="stat-row">
+      <div class="stat"><div class="stat-val">${latest.w}</div><div class="stat-lbl">Latest (kg)</div></div>
+      ${delta!==null?`<div class="stat"><div class="stat-val ${delta<=0?'dn':'up'}">${delta>0?'+':''}${delta}</div><div class="stat-lbl">Change (kg)</div></div>`:''}
+      <div class="stat"><div class="stat-val">${ws.length}</div><div class="stat-lbl">Days logged</div></div>
+    </div>` : '';
+
+  // Export panel
+  const { dates: exportDates } = getExportDateRange();
+  const canExport = hasLogs && (S.exportIncludeFood || S.exportIncludeWeight);
+  const exportSummary = hasLogs
+    ? `<span class="export-badge">${exportDates.length} day${exportDates.length!==1?'s':''} · ${[S.exportIncludeFood?'Food':'',S.exportIncludeWeight?'Weight':''].filter(Boolean).join(' + ')||'none'}</span>`
+    : '';
+
+  const rangeModes = [
+    {k:'all', l:'All time'},{k:'7d', l:'Last 7d'},{k:'30d', l:'Last 30d'},{k:'90d', l:'Last 90d'},{k:'custom', l:'Custom'}
+  ];
+
+  const exportPanel = `
+    <div class="card card-export">
+      <div class="lbl">⬇ Export Data</div>
+      <div style="font-size:12px;color:#6B7280;margin-bottom:10px">Choose what to export and the date range.</div>
+
+      <div style="font-size:10px;color:#3B82F6;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px">Include</div>
+      <div class="toggle-row">
+        <button class="toggle-pill ${S.exportIncludeFood?'active':''}" data-action="toggle-export-food">🍽 Food</button>
+        <button class="toggle-pill ${S.exportIncludeWeight?'active':''}" data-action="toggle-export-weight">⚖️ Weight</button>
+      </div>
+
+      <div style="font-size:10px;color:#3B82F6;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:8px">Date Range</div>
+      <div class="range-chips">
+        ${rangeModes.map(r=>`<button class="range-chip ${S.exportRangeMode===r.k?'active':''}" data-action="set-export-range" data-range="${r.k}">${r.l}</button>`).join('')}
+      </div>
+
+      ${S.exportRangeMode==='custom' ? `
+      <div class="range-inputs">
+        <div>
+          <div class="range-lbl">From</div>
+          <input class="inp-range" type="date" value="${S.exportFrom}" data-action="set-export-from">
+        </div>
+        <div>
+          <div class="range-lbl">To</div>
+          <input class="inp-range" type="date" value="${S.exportTo}" data-action="set-export-to">
+        </div>
+      </div>` : ''}
+
+      ${exportSummary}
+      <button class="btn-export-go" data-action="export-csv" ${!canExport||!exportDates.length?'disabled':''}>
+        ⬇ Export ${exportDates.length} entr${exportDates.length!==1?'ies':'y'} as CSV
+      </button>
+    </div>`;
+
+  const historyHTML = sortedDates.length===0 ?
+    `<div class="empty">No entries yet.<br><small>Start logging in the Log tab!</small></div>` :
+    sortedDates.map(dt => {
+      const e = S.logs[dt];
+      const filledMeals = DEFAULT_MEALS.filter(m => (e[m.key]||[]).some(it=>it.text.trim()));
+      const filledCustom = (e.custom||[]).filter(c=>(c.items||[]).some(it=>it.text.trim()));
+      const total = filledMeals.length + filledCustom.length;
+      const isConfirming = S.confirmDeleteDate === dt;
+      return `
+        <div class="hist-card">
+          <div class="hist-head">
+            <div>
+              <div class="hist-date">${fmtDate(dt)}</div>
+              <div class="hist-sub">${total} meal${total!==1?'s':''} logged</div>
+            </div>
+            ${e.weight?`<div class="hist-w"><div class="hist-w-val">${esc(e.weight)}</div><div class="hist-w-u">kg</div></div>`:''}
+          </div>
+          ${filledMeals.map(m=>{
+            const texts = (e[m.key]||[]).filter(it=>it.text.trim()).map(it=>esc(it.text)).join(', ');
+            return `<div class="hist-meal"><span style="min-width:18px">${m.icon}</span><span>${texts}</span></div>`;
+          }).join('')}
+          ${filledCustom.map(c=>{
+            const texts = (c.items||[]).filter(it=>it.text.trim()).map(it=>esc(it.text)).join(', ');
+            return `<div class="hist-meal"><span style="min-width:18px">${esc(c.icon)}</span><span class="custom"><b style="font-weight:600">${esc(c.label)}:</b> ${texts}</span></div>`;
+          }).join('')}
+          ${isConfirming ? `
+            <div style="margin-top:10px;padding:12px;background:#FEF2F2;border-radius:10px;border:1.5px solid #FECACA">
+              <div style="font-size:13px;font-weight:700;color:#DC2626;margin-bottom:4px">Delete this entry?</div>
+              <div style="font-size:12px;color:#6B7280;margin-bottom:10px">All data for ${fmtDate(dt)} will be removed permanently.</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn-delete-confirm" data-action="confirm-delete" data-date="${dt}">Yes, Delete</button>
+                <button class="btn-cancel" data-action="cancel-delete">Cancel</button>
+              </div>
+            </div>` : `
+          <div class="hist-actions">
+            <button class="hist-btn hist-btn-edit" data-action="jump-to-date" data-date="${dt}">✏️ Edit</button>
+            <button class="hist-btn hist-btn-del" data-action="delete-entry-hist" data-date="${dt}">🗑 Delete</button>
+          </div>`}
+        </div>`;
+    }).join('');
+
+  return `
+    <div class="card">
+      <div class="lbl">Weight Over Time</div>
+      <div class="chart-wrap">${buildChart()}</div>
+      ${statsHTML}
+    </div>
+    ${exportPanel}
+    <div class="lbl" style="margin-bottom:10px">History</div>
+    ${historyHTML}`;
+}
+
+// ─────────────────────────────────────────────
+// Render
+// ─────────────────────────────────────────────
+function render() {
+  document.getElementById('app').innerHTML = `
+    <div id="inner">
+      <div class="hdr">
+        <div class="hdr-top">
+          <div class="hdr-icon">🥗</div>
+          <div>
+            <div class="hdr-title">Daily Tracker</div>
+            <div class="hdr-sub">meals &amp; weight log</div>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn ${S.tab==='log'?'active':''}" data-action="set-tab" data-tab="log">📋&nbsp; Log</button>
+          <button class="tab-btn ${S.tab==='weight'?'active':''}" data-action="set-tab" data-tab="weight">📈&nbsp; Weight</button>
+        </div>
+      </div>
+      <div class="page" id="page-content">
+        ${S.tab==='log' ? renderLogTab() : renderWeightTab()}
+      </div>
+    </div>`;
+  attachEvents();
+}
+
+// ─────────────────────────────────────────────
+// Events
+// ─────────────────────────────────────────────
+function attachEvents() {
+  const app = document.getElementById('app');
+  app.addEventListener('click', handleClick);
+  app.addEventListener('input', handleInput);
+  app.addEventListener('change', handleChange);
+}
+
+function handleClick(e) {
+  const el = e.target.closest('[data-action]');
+  if (!el) { if (S.showIconPicker) { S.showIconPicker=false; render(); } return; }
+  const a = el.dataset.action;
+
+  if (a==='set-tab') {
+    S.tab=el.dataset.tab; syncDraft(); S.addingCustom=false; S.saveLabel='Save Entry'; S.confirmDeleteDate=null; render();
+  }
+  else if (a==='save') { doSave(); }
+  else if (a==='remove-custom') {
+    S.draft.custom=(S.draft.custom||[]).filter(c=>String(c.id)!==el.dataset.id); render();
+  }
+  else if (a==='add-sub-meal') {
+    const key=el.dataset.key;
+    if (!Array.isArray(S.draft[key])) S.draft[key]=[];
+    S.draft[key].push({id:uid(),text:''});
+    render();
+    setTimeout(()=>{ const ins=document.querySelectorAll(`[data-action="update-sub-meal"][data-key="${key}"]`); if(ins.length) ins[ins.length-1].focus(); },30);
+  }
+  else if (a==='remove-sub-meal') {
+    const key=el.dataset.key, sid=el.dataset.sid;
+    S.draft[key]=(S.draft[key]||[]).filter(it=>it.id!==sid); render();
+  }
+  else if (a==='add-sub-custom') {
+    const cid=el.dataset.cid;
+    S.draft.custom=(S.draft.custom||[]).map(c=>String(c.id)===String(cid)?{...c,items:[...(c.items||[]),{id:uid(),text:''}]}:c);
+    render();
+    setTimeout(()=>{ const ins=document.querySelectorAll(`[data-action="update-sub-custom"][data-cid="${cid}"]`); if(ins.length) ins[ins.length-1].focus(); },30);
+  }
+  else if (a==='remove-sub-custom') {
+    const cid=el.dataset.cid, sid=el.dataset.sid;
+    S.draft.custom=(S.draft.custom||[]).map(c=>String(c.id)===String(cid)?{...c,items:(c.items||[]).filter(it=>it.id!==sid)}:c);
+    render();
+  }
+  else if (a==='start-add-custom') { S.addingCustom=true; render(); setTimeout(()=>{ document.getElementById('newLabelInput')?.focus(); },50); }
+  else if (a==='cancel-custom') { S.addingCustom=false; S.newLabel=''; S.newIcon='🥤'; S.showIconPicker=false; render(); }
+  else if (a==='add-custom') { doAddCustom(); }
+  else if (a==='quick-custom') { doAddCustom(el.dataset.label, el.dataset.icon); }
+  else if (a==='toggle-icon-picker') { S.showIconPicker=!S.showIconPicker; render(); e.stopPropagation(); }
+  else if (a==='pick-icon') { S.newIcon=el.dataset.icon; S.showIconPicker=false; render(); }
+  else if (a==='jump-to-date') { S.date=el.dataset.date; syncDraft(); S.tab='log'; S.saveLabel='Save Entry'; S.confirmDeleteDate=null; render(); }
+  // Delete entry from Log tab
+  else if (a==='delete-entry') { S.confirmDeleteDate=S.date; render(); }
+  // Delete entry from History (Weight tab)
+  else if (a==='delete-entry-hist') { S.confirmDeleteDate=el.dataset.date; render(); }
+  else if (a==='confirm-delete') {
+    const dt = el.dataset.date || S.confirmDeleteDate;
+    if (dt) { delete S.logs[dt]; saveLogs(); }
+    S.confirmDeleteDate=null;
+    if (S.tab==='log') { syncDraft(); S.saveLabel='Save Entry'; }
+    render();
+  }
+  else if (a==='cancel-delete') { S.confirmDeleteDate=null; render(); }
+  // Export toggles
+  else if (a==='toggle-export-food') { S.exportIncludeFood=!S.exportIncludeFood; render(); }
+  else if (a==='toggle-export-weight') { S.exportIncludeWeight=!S.exportIncludeWeight; render(); }
+  else if (a==='set-export-range') { S.exportRangeMode=el.dataset.range; render(); }
+  else if (a==='export-csv') { doExportCSV(); }
+}
+
+function handleInput(e) {
+  const el=e.target, a=el.dataset.action;
+  if (a==='update-sub-meal') {
+    const key=el.dataset.key, sid=el.dataset.sid;
+    S.draft[key]=(S.draft[key]||[]).map(it=>it.id===sid?{...it,text:el.value}:it);
+  }
+  else if (a==='update-sub-custom') {
+    const cid=el.dataset.cid, sid=el.dataset.sid;
+    S.draft.custom=(S.draft.custom||[]).map(c=>String(c.id)===String(cid)?{...c,items:(c.items||[]).map(it=>it.id===sid?{...it,text:el.value}:it)}:c);
+  }
+  else if (a==='set-weight') { S.draft.weight=el.value; }
+  else if (a==='set-new-label') { S.newLabel=el.value; }
+}
+
+function handleChange(e) {
+  const el=e.target, a=el.dataset.action;
+  if (a==='set-date') { S.date=el.value; syncDraft(); S.saveLabel='Save Entry'; S.confirmDeleteDate=null; render(); }
+  else if (a==='set-export-from') { S.exportFrom=el.value; render(); }
+  else if (a==='set-export-to') { S.exportTo=el.value; render(); }
+}
+
+// ─────────────────────────────────────────────
+// Actions
+// ─────────────────────────────────────────────
+function doSave() {
+  S.saveLabel='Saving…'; updateSaveBtn();
+  S.logs[S.date] = JSON.parse(JSON.stringify(S.draft));
+  saveLogs();
+  setTimeout(()=>{ S.saveLabel='✓  Saved!'; updateSaveBtn();
+    setTimeout(()=>{ S.saveLabel='Save Entry'; updateSaveBtn(); },2000);
+  },300);
+}
+
+function updateSaveBtn() {
+  const btn=document.querySelector('[data-action="save"]');
+  if (!btn) return;
+  btn.textContent=S.saveLabel;
+  btn.className='btn-save'+(S.saveLabel==='✓  Saved!'?' saved':'');
+}
+
+function doAddCustom(labelArg, iconArg) {
+  const lbl=(labelArg||S.newLabel).trim();
+  const icn=iconArg||S.newIcon;
+  if (!lbl) { document.getElementById('newLabelInput')?.focus(); return; }
+  const entry={id:uid(),label:lbl,icon:icn,items:[]};
+  S.draft.custom=[...(S.draft.custom||[]),entry];
+  const exists=S.knownLabels.find(k=>k.label.toLowerCase()===lbl.toLowerCase());
+  if (!exists) { S.knownLabels.push({label:lbl,icon:icn}); saveLabels(); }
+  S.newLabel=''; S.newIcon='🥤'; S.addingCustom=false; S.showIconPicker=false;
+  render();
+}
+
+function doExportCSV() {
+  const { dates } = getExportDateRange();
+  if (!dates.length) return;
+
+  const includeFood = S.exportIncludeFood;
+  const includeWeight = S.exportIncludeWeight;
+
+  // Collect custom label columns if food is included
+  const customLabelSet = new Set();
+  if (includeFood) {
+    dates.forEach(dt => (S.logs[dt]?.custom||[]).forEach(c => customLabelSet.add(c.label)));
+  }
+  const customCols = [...customLabelSet];
+
+  // Build headers
+  const headers = ['Date'];
+  if (includeWeight) headers.push('Weight (kg)');
+  if (includeFood) headers.push('Breakfast','Lunch','Dinner','Snacks',...customCols);
+
+  const rows = dates.map(dt => {
+    const e = S.logs[dt] || {};
+    const mealText = k => (e[k]||[]).filter(it=>it.text.trim()).map(it=>it.text).join('; ');
+    const row = [dt];
+    if (includeWeight) row.push(e.weight||'');
+    if (includeFood) {
+      row.push(mealText('breakfast'), mealText('lunch'), mealText('dinner'), mealText('snacks'));
+      const cm={};
+      (e.custom||[]).forEach(c=>{ cm[c.label]=(c.items||[]).filter(it=>it.text.trim()).map(it=>it.text).join('; '); });
+      customCols.forEach(l=>row.push(cm[l]||''));
+    }
+    return row.map(escCSV).join(',');
+  });
+
+  const csv=[headers.map(escCSV).join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const suffix = S.exportRangeMode==='custom' ? `${S.exportFrom}_to_${S.exportTo}` : S.exportRangeMode;
+  a.href=url; a.download=`daily-tracker-${suffix}-${todayStr()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─────────────────────────────────────────────
+// Boot
+// ─────────────────────────────────────────────
+loadData();
+syncDraft();
+render();
+
+if ('serviceWorker' in navigator) {
+  const sw=`const CACHE='dt-v3';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const blob=new Blob([sw],{type:'text/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+</script>
+</body>
+</html>
